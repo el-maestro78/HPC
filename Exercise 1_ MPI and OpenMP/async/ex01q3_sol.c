@@ -1,6 +1,7 @@
 // Exercise 1, question 3: todo (put your solution here)
 
-#include <mpi.h>
+//#include <mpi.h>
+#include "mpi.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
