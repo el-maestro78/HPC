@@ -14,7 +14,7 @@
 testing gcc -o test force1d.c -mavx -O3 -Wall -fopt-info
 */
 
-inline double force_sum(const __m256 num);
+__m256 force_sum(const __m256 x, const __m256 y);
 
 double get_wtime(void) {
   struct timeval t;
@@ -45,8 +45,8 @@ float compute_force(float *positions, float x0)
     __m256 rm2_avx = _mm256_set1_ps(rm2);
     __m256 eps_avx = _mm256_set1_ps(eps);
     __m256 twelve_avx = _mm256_set1_ps(12.0f);
-    __m256 force_avx;
-    __m256 temp;
+    __m256 force_avx = _mm256_set1_ps(0.0f);
+    __m256 temp = _mm256_set1_ps(0.0f);
     float force_result[8] __attribute__((aligned(32)));
     //float force_result[8];
     for (size_t i = 0; i+7 < N; i +=8) { // 4x8 =32 allignment for avx
@@ -62,7 +62,9 @@ float compute_force(float *positions, float x0)
         __m256 s6_sq_sub_s6_avx =_mm256_sub_ps(s6_sq_avx, s6_avx);
         __m256 force_fractor_avx = _mm256_div_ps(s6_sq_sub_s6_avx, r_avx);
         __m256 force_contribution_avx = _mm256_mul_ps(twelve_eps_avx,force_fractor_avx);
-        force_avx = _mm256_add_ps(temp, force_contribution_avx);
+        //force_avx = _mm256_add_ps(temp, force_contribution_avx);
+        temp = force_sum(force_avx, force_contribution_avx);
+        force_avx = temp;
         //_mm256_store_ps(force_result, force_avx);
     }
 
@@ -74,11 +76,18 @@ float compute_force(float *positions, float x0)
     return force;
 }
 
-inline double force_sum(const __m256 num)
+inline __m256 force_sum(const __m256 x, const __m256 y)
 {
-  double new_num = num[0] + num[1] + num[2] + num[3];
-
-  return new_num;
+  float xy_0 = x[0] + y[0];
+  float xy_1 = x[1] + y[1];
+  float xy_2 = x[2] + y[2];
+  float xy_3 = x[3] + y[3];
+  float xy_4 = x[4] + y[4];
+  float xy_5 = x[5] + y[5];
+  float xy_6 = x[6] + y[6];
+  float xy_7 = x[7] + y[7];
+  __m256 num = _mm256_set_ps(xy_7,xy_6,xy_5,xy_4,xy_3,xy_2,xy_1,xy_0);
+  return num;
 }
 
 int main(int argc, const char** argv)
