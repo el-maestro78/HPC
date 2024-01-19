@@ -55,3 +55,4 @@ test/
 *.ini
 Exercise 2_ SIMD and GPU/hpc_ex02_code/task1_simd/test.c
 Exercise 2_ SIMD and GPU/hpc_ex02_code/task1_simd/hi.c
+Exercise 1_ MPI and OpenMP/quadraticform/test.c
