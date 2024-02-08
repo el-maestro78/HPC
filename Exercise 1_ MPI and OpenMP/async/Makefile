@@ -1,5 +1,5 @@
 CC=mpicc
-CFLAGS=-O2 -Wall
+CFLAGS=-O2 -Wall -fopt-info
 LDFLAGS=
 
 ALL=ex01q3 ex01q3_sol
