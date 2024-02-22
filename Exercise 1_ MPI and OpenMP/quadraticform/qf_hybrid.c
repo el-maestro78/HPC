@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv)
 {
-  int rank, size, provided ;
+  int unsigned rank, size, provided ;
   const unsigned int n = 16384;
 
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
@@ -23,16 +23,11 @@ int main(int argc, char** argv)
     const unsigned int end = n*(rank+1) / size;
     const unsigned int chunk_size = end - start;
 
-    //double *A = (double *)malloc(n*n*sizeof(double));
-    //double *v = (double *)malloc(n*sizeof(double));
-    //double *w = (double *)malloc(n*sizeof(double));
-
-    //unsigned int local_n = n / size;
     double *A = (double *)malloc(chunk_size * chunk_size * sizeof(double));
     double *v = (double *)malloc(chunk_size * sizeof(double));
     double *w = (double *)malloc(chunk_size * sizeof(double));
 
-#pragma omp parallel for simd collapse(2)
+#pragma omp parallel for simd// collapse(2)
     for (unsigned int i=0; i<chunk_size; ++i)
         for (unsigned int j=0; j<chunk_size; ++j)
             A[i * chunk_size + j] = (i + 2.0 * j) / (chunk_size * chunk_size);
@@ -46,28 +41,14 @@ int main(int argc, char** argv)
 
     // Compute the result locally using OpenMP
     double local_result = 0.0;
-#pragma omp parallel for reduction(+:local_result) simd collapse(2)
+#pragma omp parallel for reduction(+:local_result) simd// collapse(2)
     for (unsigned int i = 0; i < chunk_size; ++i) {
       for (unsigned int j = 0; j < chunk_size; ++j) {
         local_result += v[i] * A[i*chunk_size + j] * w[j];
       }
     }
 
-    /*
-    double *results = NULL;
-    if (rank == 0) {
-      results = (double *)malloc(size * sizeof(double));
-    }
-     */
-    /*
-    if (rank == 0) {
-        double total_result = 0.0;
-        for (int p = 0; p < size; ++p) {
-            total_result += results[p];
-        }
-        */
-    //MPI_Gather(&local_result, 1, MPI_DOUBLE, results, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    double results = 0.0;
+    double results;
     MPI_Reduce(&local_result, &results, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
     if (rank == 0)

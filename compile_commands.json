@@ -1,0 +1,17 @@
+[
+  {
+    "directory": "D:\\Github\\HPC\\quadraticform",
+    "command": "mpicc -fopenmp D:\\Github\\HPC\\quadraticform\\qf_hybrid.c -o D:\\Github\\HPC\\quadraticform\\qf_hybrid.exe",
+    "file": "D:\\Github\\HPC\\quadraticform\\qf_hybrid.c"
+  },
+  {
+    "directory": "D:\\Github\\HPC\\mpiio",
+    "command": "mpicc D:\\Github\\HPC\\mpiio\\diffusion2d_mpi_nb.c -o D:\\Github\\HPC\\mpiio\\diffusion2d_mpi_nb.exe",
+    "file": "D:\\Github\\HPC\\mpiio\\diffusion2d_mpi_nb.c"
+  },
+  {
+    "directory": "D:\\Github\\HPC\\async",
+    "command": "gcc -fopenmp D:\\Github\\HPC\\async\\ex01q3_sol.c -o D:\\Github\\HPC\\async\\ex01q3_sol.exe",
+    "file": "D:\\Github\\HPC\\async\\ex01q3_sol.c"
+  }
+]
