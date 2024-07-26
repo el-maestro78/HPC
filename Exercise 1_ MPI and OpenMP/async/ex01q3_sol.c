@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
 		do_work(input);
 	}
 
+
 	MPI_Finalize();
 	return 0;
 }

@@ -266,8 +266,34 @@ void write_density(Diffusion2D *D2D, char *filename)
 }
 
 void write_density_mpi(Diffusion2D *D2D, char *filename)
-{
-    // TODO: add your MPI I/O code here, write rho_ to disk
+{ // TODO: add your MPI I/O code here, write rho_ to disk
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    int real_N_ = D2D->real_N_;
+    int local_N_ = D2D->local_N_;
+    double *rho_ = D2D->rho_;
+
+    //double density_p = rho_[local_N_ * real_N_ + real_N_];
+
+    MPI_File out_file;
+    MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &out_file);
+
+    MPI_Offset base;
+    MPI_File_set_size (out_file, 0);
+    MPI_File_get_position(out_file, &base);
+
+    int count = ((local_N_ + 1)* real_N_) + real_N_;
+    MPI_Offset len = count * sizeof(double); // HOW MANY BYTES each rank wil
+    MPI_Offset offset = rank * len; // WHERE each rank will write
+    MPI_Status status;
+
+    // Write data from all processes into the file
+    MPI_File_write_at_all(out_file, offset, rho_, count, MPI_DOUBLE, &status);
+
+    // Close the file
+    MPI_File_close(&out_file);
 }
 
 
@@ -331,7 +357,8 @@ int main(int argc, char* argv[])
         write_density(&system, (char *)"density_seq.bin");
     }
     write_density_mpi(&system, (char *)"density_mpi.bin");
-    write_density_mpi_compressed(&system, (char *)"density_mpi_compressed.bin");
+    write_density_mpi(&system, (char *)"density_mpi_vis.dat");
+    //write_density_mpi_compressed(&system, (char *)"density_mpi_compressed.bin");
 
 #ifndef _PERF_
     if (rank == 0) {
