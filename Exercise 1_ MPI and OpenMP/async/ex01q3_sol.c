@@ -24,9 +24,9 @@ int main(int argc, char** argv) {
 
 	int M = 2;	// two tasks per process
 	int input;
-
+    int N = M*size;
 	if(rank == 0) {
-		int N = M*size;
+		//int N = M*size;
 		srand48(time(0));
 
 		for(int i=0; i<N; i++) {

@@ -1,5 +1,5 @@
 CC=mpicc
-CFLAGS=-O2 -Wall -fopt-info
+CFLAGS=-O2 -Wall #-fopt-info
 LDFLAGS=
 
 ALL=ex01q3 ex01q3_sol
@@ -17,3 +17,4 @@ ex01q3_sol: ex01q3_sol.c
 clean:
 	-rm -f $(ALL)
 
+# mpirun -n 4 --mca coll_hcoll_enable 0 --mca pml ucx --mca pml_ucx_priority 0 ./ex01q3_sol
