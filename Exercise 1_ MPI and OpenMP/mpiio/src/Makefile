@@ -13,7 +13,8 @@ endif
 
 CFLAGS+=-Wall -O2
 CFLAGS_THREADS=$(CFLAGS) -fopenmp
-
+ZFPHOME = ~/ex1/mpiio/zfp-0.5.5 #/include/zfp.h
+ZFPFLAGS = -I$(ZFPHOME)/include #-L$(ZFPHOME)/build/lib -lzfp
 all: diffusion2d_mpi diffusion2d_mpi_nb diffusion2d_mpi_nb_io
 
 diffusion2d_mpi: diffusion2d_mpi.c
@@ -23,11 +24,14 @@ diffusion2d_mpi_nb: diffusion2d_mpi_nb.c
 	$(MPICC) $(CFLAGS) -o $@ $<
 
 diffusion2d_mpi_nb_io: diffusion2d_mpi_nb_io.c
-	$(MPICC) $(CFLAGS) -o $@ $<
+	#$(MPICC) $(CFLAGS) $(ZFPFLAGS) -o $@ $<
+	$(MPICC) $(CFLAGS) -o $@ $< -lz
 
 clean:
 	rm -f diffusion2d_mpi diffusion2d_mpi_nb diffusion2d_mpi_nb_io *.dat
 	rm -rf *.dSYM
+	rm -rf *.bin
+	rm -rf *.dat
 
 
 # Execution examples

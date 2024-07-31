@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <mpi.h>
-
+#include <zlib.h>
+//#include "zfp-0.5.5/include/zfp.h"
 
 
 typedef struct Diagnostics_s
@@ -265,6 +266,24 @@ void write_density(Diffusion2D *D2D, char *filename)
     fclose(out_file);
 }
 
+void compress_data(const double *data, size_t data_size, unsigned char **compressed_data, size_t *compressed_size) {
+    uLongf dest_len = compressBound(data_size); // Maximum compressed size
+    *compressed_data = (unsigned char *)malloc(dest_len);
+
+    if (*compressed_data == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
+
+    if (compress(*compressed_data, &dest_len, (const Bytef *)data, data_size) != Z_OK) {
+        fprintf(stderr, "Compression failed\n");
+        free(*compressed_data);
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
+
+    *compressed_size = dest_len;
+}
+
 void write_density_mpi(Diffusion2D *D2D, char *filename)
 { // TODO: add your MPI I/O code here, write rho_ to disk
     int rank, size;
@@ -292,10 +311,34 @@ void write_density_mpi(Diffusion2D *D2D, char *filename)
     MPI_File_close(&out_file);
 }
 
+void write_density_mpi_compressed(Diffusion2D *D2D, char *filename) {
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-void write_density_mpi_compressed(Diffusion2D *D2D, char *filename)
-{
-    // TODO: add your data compression + MPI I/O code here, write compressed rho_ to disk
+    int real_N_ = D2D->real_N_;
+    int local_N_ = D2D->local_N_;
+    double *rho_ = D2D->rho_;
+
+    MPI_File out_file;
+    MPI_Status status;
+
+    // Allocate memory for compressed data
+    unsigned char *compressed_data;
+    size_t compressed_size;
+
+    // Compress data
+    compress_data(rho_, local_N_ * real_N_ * sizeof(double), &compressed_data, &compressed_size);
+
+    // Open the file with collective call
+    MPI_File_open(MPI_COMM_WORLD, filename, MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &out_file);
+
+    // Write compressed data to file
+    MPI_File_write_at(out_file, rank * compressed_size, compressed_data, compressed_size, MPI_BYTE, &status);
+
+    // Free allocated memory and close file
+    free(compressed_data);
+    MPI_File_close(&out_file);
 }
 
 
@@ -349,12 +392,13 @@ int main(int argc, char* argv[])
         printf("Timing: %d %lf\n", N, t1-t0);
 
     if (procs == 1) {
-        write_density(&system, (char *)"density_seq_vis.dat");
         write_density(&system, (char *)"density_seq.bin");
+        write_density(&system, (char *)"density_seq_vis.dat");
     }
     write_density_mpi(&system, (char *)"density_mpi.bin");
     write_density_mpi(&system, (char *)"density_mpi_vis.dat");
-    //write_density_mpi_compressed(&system, (char *)"density_mpi_compressed.bin");
+    write_density_mpi_compressed(&system, (char *)"density_comp.bin");
+    write_density_mpi_compressed(&system, (char *)"density_comp_vis.dat");
 
 #ifndef _PERF_
     if (rank == 0) {
