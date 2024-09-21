@@ -1,9 +1,12 @@
 // sequential code
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 int main(int argc, char** argv)
 {
+    clock_t start_time, end_time;
+    double elapsed_time;
 	int n = 16384;
 
 	if (argc == 2)
@@ -13,7 +16,7 @@ int main(int argc, char** argv)
 	double *A = (double *)malloc(n*n*sizeof(double));
 	double *v = (double *)malloc(n*sizeof(double));
 	double *w = (double *)malloc(n*sizeof(double));
-
+    start_time = clock(); //start
 	/// init A_ij = (i + 2*j) / n^2
 	for (int i=0; i<n; ++i)
 		for (int j=0; j<n; ++j)
@@ -32,9 +35,12 @@ int main(int argc, char** argv)
 	for (int i=0; i<n; ++i)
 		for (int j=0; j<n; ++j)
 			result += v[i] * A[i*n + j] * w[j];
+    end_time = clock();
 
-	printf("Result = %lf\n", result);
+    elapsed_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
 
+    printf("Result = %lf\n", result);
+    printf("Elapsed time: %f seconds\n", elapsed_time);
 	/// free memory
 	free(A);
 	free(v);
