@@ -1,5 +1,5 @@
 # mpicc -Wall -o test test.c -fopenmp -Minfo -lmpi
-# mpirun -np 4 ./qf_hybrid --mca orte_base_help_aggregate 0
+# OMP_NUM_THREADS=1 mpirun -np 1 ./qf_hybrid --mca orte_base_help_aggregate 0 -x HCOLL_ENABLE=0 -x UCX_NET_DEVICES=all
 
 CC=gcc
 MPI = mpicc

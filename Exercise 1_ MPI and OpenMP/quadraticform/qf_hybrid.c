@@ -7,7 +7,8 @@ int main(int argc, char** argv)
 {
   int unsigned rank, size, provided ;
   const unsigned int n = 16384;
-
+  // Measurements
+  double start_time, end_time, elapsed_time;
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);
 
   if (provided < MPI_THREAD_FUNNELED) {
@@ -26,6 +27,8 @@ int main(int argc, char** argv)
     double *A = (double *)malloc(chunk_size * chunk_size * sizeof(double));
     double *v = (double *)malloc(chunk_size * sizeof(double));
     double *w = (double *)malloc(chunk_size * sizeof(double));
+
+    start_time = MPI_Wtime();
 
 #pragma omp parallel for simd// collapse(2)
     for (unsigned int i=0; i<chunk_size; ++i)
@@ -51,8 +54,22 @@ int main(int argc, char** argv)
     double results;
     MPI_Reduce(&local_result, &results, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-    if (rank == 0)
-      printf("Total Result = %lf\n", results);
+    long long total_flop = 6 * chunk_size * chunk_size + 6 * chunk_size;
+    double flops;
+    double speedup;
+    double sequential_time = 2.192374;
+
+    end_time = MPI_Wtime();
+    elapsed_time = end_time - start_time;
+    flops = total_flop / elapsed_time;
+    speedup = sequential_time / elapsed_time;
+    if (rank == 0){
+        printf("Total Result = %lf\n", results);
+        printf("Elapsed time: %f seconds\n", elapsed_time);
+        printf("FLOPs per second: %e\n", flops);
+        printf("Speedup: %f\n", speedup);
+    }
+
       //free(results);
     free(A);
     free(v);

@@ -8,7 +8,8 @@ int main(int argc, char** argv)
     clock_t start_time, end_time;
     double elapsed_time;
 	int n = 16384;
-
+    long total_flop = 6 * n * n + 6 * n;
+    double flops;
 	if (argc == 2)
 		n = atoi(argv[1]);
 
@@ -38,9 +39,10 @@ int main(int argc, char** argv)
     end_time = clock();
 
     elapsed_time = ((double) (end_time - start_time)) / CLOCKS_PER_SEC;
-
+    flops = total_flop / elapsed_time;
     printf("Result = %lf\n", result);
     printf("Elapsed time: %f seconds\n", elapsed_time);
+    printf("FLOPs per second: %e\n", flops);
 	/// free memory
 	free(A);
 	free(v);
