@@ -3,7 +3,12 @@
 #include <zlib.h>
 #include <string.h>
 
-// Compress data
+// Calculate CRC32 checksum
+uLong calculate_crc32(const void *data, size_t data_size) {
+    uLong crc = crc32(0L, Z_NULL, 0);
+    return crc32(crc, (const Bytef *)data, (uInt)data_size);
+}
+
 void compress_data(const double *data, size_t data_size, unsigned char **compressed_data, size_t *compressed_size) {
     uLongf dest_len = compressBound(data_size);
     *compressed_data = (unsigned char *)malloc(dest_len);
@@ -39,7 +44,7 @@ void decompress_data(const unsigned char *compressed_data, size_t compressed_siz
 }
 
 int main() {
-    const char *data_file = "density_mpi.bin"; // Replace with your file names
+    const char *data_file = "density_mpi.bin";
     const char *compressed_file = "density_comp.bin";
     const char *decompressed_file = "decompressed.bin";
 
@@ -63,10 +68,18 @@ int main() {
     fread(original_data, 1, data_size, file);
     fclose(file);
 
+    // Calculate checksum for original data
+    uLong original_checksum = calculate_crc32(original_data, data_size);
+    printf("Original data checksum: %lu\n", original_checksum);
+
     // Compress data
     unsigned char *compressed_data;
     size_t compressed_size;
     compress_data(original_data, data_size, &compressed_data, &compressed_size);
+
+    // Calculate checksum for compressed data
+    uLong compressed_checksum = calculate_crc32(compressed_data, compressed_size);
+    printf("Compressed data checksum: %lu\n", compressed_checksum);
 
     // Write compressed data
     file = fopen(compressed_file, "wb");
@@ -107,6 +120,10 @@ int main() {
     decompress_data(compressed_data, compressed_size, &decompressed_data, data_size);
     free(compressed_data);
 
+    // Calculate checksum for decompressed data
+    uLong decompressed_checksum = calculate_crc32(decompressed_data, data_size);
+    printf("Decompressed data checksum: %lu\n", decompressed_checksum);
+
     // Write decompressed data
     file = fopen(decompressed_file, "wb");
     if (!file) {
@@ -124,6 +141,16 @@ int main() {
     } else {
         printf("Data verification failed\n");
     }
+
+    // Compare checksums
+    if (original_checksum == decompressed_checksum) {
+        printf("Checksum verification successful\n");
+    } else {
+        printf("Checksum verification failed\n");
+    }
+
+    // Print compression ratio
+    printf("Compression ratio: %.2f%%\n", (1.0 - (double)compressed_size / data_size) * 100);
 
     // Clean up
     free(original_data);

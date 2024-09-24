@@ -44,6 +44,8 @@ clean:
 # mpirun -n 1 ./diffusion2d_mpi_nb 1 1 1024 1000 0.00000001
 # mpirun -n 4 ./diffusion2d_mpi_nb_io 1 1 1024 1000 0.00000001
 # mpirun -n 4 --mca coll_hcoll_enable 0 --mca pml ucx --mca pml_ucx_priority 0 ./diffusion2d_mpi_nb 1 1 1024 1000 0.00000001
+# mpirun -n 4 --mca coll_hcoll_enable 0 --mca pml ucx --mca pml_ucx_priority 0 ./diffusion2d_mpi_nb 1 1 2048 1000 0.00000001
+# mpirun -n 4 --mca coll_hcoll_enable 0 --mca pml ucx --mca pml_ucx_priority 0 ./diffusion2d_mpi_nb 1 1 4096 1000 0.00000001
 
 # For testing and visualization
 # mpirun -n 1 ./diffusion2d_mpi_nb 1 1 128 50000 0.00001
