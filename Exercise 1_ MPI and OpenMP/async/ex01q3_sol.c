@@ -24,26 +24,30 @@ int main(int argc, char** argv) {
 
 	int M = 2;	// two tasks per process
 	int input;
+	int N; //safe memory management
 
-    MPI_Request requests[size * M];
+    MPI_Request requests[2*M];
+	MPI_Status statuses[2*M];
 
 	if(rank == 0) {
-		int N = M*size;
+		N = M*size;
 		srand48(time(0));
 
 		for(int i=0; i<N; i++) {
 			input = lrand48() % 1000;	// some random value
-            //MPI_Send(&input, 1, MPI_INT, i%size, 100, MPI_COMM_WORLD);
-            MPI_Isend(&input, 1, MPI_INT, i % size, 100, MPI_COMM_WORLD, &requests[i]);
+            //MPI_Send(&input, 1, MPI_INT, i%size, 100,https://docs.google.com/document/d/1nEEy9cfb2a-0Vu3c4EoXnXPVyIz_VwuZ/edit MPI_COMM_WORLD);
+            MPI_Isend(&input, 1, MPI_INT, i % size, 100, MPI_COMM_WORLD, &requests[i % size]);
 		}
-        MPI_Waitall(N, requests, MPI_STATUSES_IGNORE);
 	}
 
 	for(int i = 0; i < M; i++) {
-        MPI_Recv(&input, 1, MPI_INT, 0, 100, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        //MPI_Irecv(&input, 1, MPI_INT, 0, 100, MPI_COMM_WORLD, &requests[i]);
+        //MPI_Recv(&input, 1, MPI_INT, 0, 100, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Irecv(&input, 1, MPI_INT, 0, 100, MPI_COMM_WORLD, &requests[M + i]);
 		do_work(input);
 	}
+    
+	MPI_Waitall(2*M, requests, statuses);
+
 	MPI_Finalize();
 	return 0;
 }
