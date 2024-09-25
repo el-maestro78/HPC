@@ -49,9 +49,8 @@ int main(int argc, char** argv) {
     for (int i = 0; i < M; i++) {
         do_work(inputs[i]);
     }
-    end_time = MPI_Wtime();
     MPI_Barrier(MPI_COMM_WORLD);
-    //end_time = MPI_Wtime();
+    end_time = MPI_Wtime();
     elapsed_time = end_time - start_time;
     if (rank == 0) {
         printf("Elapsed time: %f seconds\n", elapsed_time);
