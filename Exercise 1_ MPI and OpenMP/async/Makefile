@@ -2,7 +2,7 @@ CC=mpicc
 CFLAGS=-O2 -Wall #-fopt-info
 LDFLAGS=
 
-ALL=ex01q3 ex01q3_sol
+ALL=ex01q3 ex01q3_sol ex01q3_scatter
 
 all: $(ALL)
 
@@ -12,6 +12,8 @@ ex01q3: ex01q3.c
 ex01q3_sol: ex01q3_sol.c
 	$(CC) $(CFLAGS) -o ex01q3_sol ex01q3_sol.c $(LDFLAGS)
 
+ex01q3_scatter: ex01q3_scatter.c
+	$(CC) $(CFLAGS) -o ex01q3_sol ex01q3_sol.c $(LDFLAGS)
 
 .PHONY: clean
 clean:

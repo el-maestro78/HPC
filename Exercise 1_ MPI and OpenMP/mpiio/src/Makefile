@@ -24,6 +24,7 @@ diffusion2d_mpi_nb: diffusion2d_mpi_nb.c
 
 diffusion2d_mpi_nb_io: diffusion2d_mpi_nb_io.c
 	$(MPICC) $(CFLAGS) -o $@ $< -lz
+
 compare: compare.c
 	gcc -o compare compare.c -lz
 
