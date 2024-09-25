@@ -1,5 +1,3 @@
-// Exercise 1, question 3: todo (put your solution here)
-
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,47 +5,57 @@
 #include <unistd.h>
 
 void do_work(int i) {
-	printf("processing %d\n", i);
-	sleep(5);
+    printf("processing %d\n", i);
+    sleep(5);
 }
 
 int main(int argc, char** argv) {
-	int rank;
-	int size;
+    int rank;
+    int size;
+    double start_time, end_time, elapsed_time;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    start_time = MPI_Wtime();
+    if (rank == 0)
+        printf("Running with %d MPI processes\n", size);
 
-	MPI_Init(&argc, &argv);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
+    int M = 2;  // Two tasks per process
+    int N = M * size;  // Total number of tasks
 
-	if (rank == 0)
-		printf("Running with %d MPI processes\n", size);
+    int inputs[M];
+    MPI_Request send_requests[N];
+    MPI_Request recv_requests[M];
 
-	int M = 2;	// two tasks per process
-	int input;
-	int N; //safe memory management
+    if (rank == 0) {
+        srand48(time(0));
 
-    MPI_Request requests[2*M];
-	MPI_Status statuses[2*M];
+        // Send tasks to all processes, including self
+        for (int i = 0; i < N; i++) {
+            int task = lrand48() % 1000;  // Generate random task value
+            MPI_Isend(&task, 1, MPI_INT, i % size, 100, MPI_COMM_WORLD, &send_requests[i]);
+        }
 
-	if(rank == 0) {
-		N = M*size;
-		srand48(time(0));
+        // Wait for all sends to complete
+        MPI_Waitall(N, send_requests, MPI_STATUSES_IGNORE);
+    }
 
-		for(int i=0; i<N; i++) {
-			input = lrand48() % 1000;	// some random value
-            //MPI_Send(&input, 1, MPI_INT, i%size, 100,https://docs.google.com/document/d/1nEEy9cfb2a-0Vu3c4EoXnXPVyIz_VwuZ/edit MPI_COMM_WORLD);
-            MPI_Isend(&input, 1, MPI_INT, i % size, 100, MPI_COMM_WORLD, &requests[i % size]);
-		}
-	}
+    for (int i = 0; i < M; i++) {
+        MPI_Irecv(&inputs[i], 1, MPI_INT, 0, 100, MPI_COMM_WORLD, &recv_requests[i]);
+    }
 
-	for(int i = 0; i < M; i++) {
-        //MPI_Recv(&input, 1, MPI_INT, 0, 100, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        MPI_Irecv(&input, 1, MPI_INT, 0, 100, MPI_COMM_WORLD, &requests[M + i]);
-		do_work(input);
-	}
-    
-	MPI_Waitall(2*M, requests, statuses);
+    MPI_Waitall(M, recv_requests, MPI_STATUSES_IGNORE);
 
-	MPI_Finalize();
-	return 0;
+    for (int i = 0; i < M; i++) {
+        do_work(inputs[i]);
+    }
+    end_time = MPI_Wtime();
+    MPI_Barrier(MPI_COMM_WORLD);
+    //end_time = MPI_Wtime();
+    elapsed_time = end_time - start_time;
+    if (rank == 0) {
+        printf("Elapsed time: %f seconds\n", elapsed_time);
+    }
+    MPI_Finalize();
+    return 0;
 }
