@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 	int M = 2;	// two tasks per process
 	int input;
 
-    MPI_Request requests[2 * M];
+    MPI_Request requests[size * M];
 
 	if(rank == 0) {
 		int N = M*size;
@@ -34,8 +34,9 @@ int main(int argc, char** argv) {
 		for(int i=0; i<N; i++) {
 			input = lrand48() % 1000;	// some random value
             //MPI_Send(&input, 1, MPI_INT, i%size, 100, MPI_COMM_WORLD);
-            MPI_Isend(&input, 1, MPI_INT, i % size, 100, MPI_COMM_WORLD, &requests[i % size]);
+            MPI_Isend(&input, 1, MPI_INT, i % size, 100, MPI_COMM_WORLD, &requests[i]);
 		}
+        MPI_Waitall(N, requests, MPI_STATUSES_IGNORE);
 	}
 
 	for(int i = 0; i < M; i++) {
