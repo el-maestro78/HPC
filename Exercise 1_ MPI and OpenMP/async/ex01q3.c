@@ -13,11 +13,11 @@ void do_work(int i) {
 int main(int argc, char** argv) {
 	int rank;
 	int size;
-
+    double start_time, end_time, elapsed_time;
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
-
+    start_time = MPI_Wtime();
 	if (rank == 0)
 		printf("Running with %d MPI processes\n", size);
 
@@ -38,7 +38,11 @@ int main(int argc, char** argv) {
 		MPI_Recv(&input, 1, MPI_INT, 0, 100, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		do_work(input);
 	}
-
+    end_time = MPI_Wtime();
+    elapsed_time = end_time - start_time;
+    if (rank == 0) {
+        printf("Elapsed time: %f seconds\n", elapsed_time);
+    }
 	MPI_Finalize();
 	return 0;
 }
